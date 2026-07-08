@@ -180,7 +180,7 @@
         header {
             margin-bottom: 25px;
             text-align: center;
-            margin-top: 40px; /* Added top margin for mobile header space */
+            margin-top: 40px;
         }
 
         header h1 {
@@ -198,10 +198,9 @@
             font-size: 14px;
         }
 
-        /* FIXED MAIN CONTAINER FOR ANDROID/MOBILE VIEW */
         .editor-container {
             display: flex;
-            flex-wrap: wrap; /* Allows wrapping on phone screens */
+            flex-wrap: wrap;
             gap: 25px;
             max-width: 1350px;
             width: 100%;
@@ -212,10 +211,9 @@
             border: 1px solid var(--border-color);
         }
 
-        /* Left Controls Side - Flexible on Mobile */
         .controls {
             flex: 1;
-            min-width: 280px; /* Prevents squishing */
+            min-width: 280px;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -354,10 +352,9 @@
             color: var(--text-muted);
         }
 
-        /* Canvas Workspace Side - Flexible on Mobile */
         .canvas-area {
             flex: 2;
-            min-width: 280px; /* Prevents squishing */
+            min-width: 280px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -367,7 +364,7 @@
             border-radius: 12px;
             border: 1px dashed var(--border-color);
             padding: 20px;
-            min-height: 450px; /* Reduced minimum height to fit screens better */
+            min-height: 450px;
             box-shadow: inset 0 4px 12px rgba(0,0,0,0.15);
         }
 
@@ -412,7 +409,6 @@
             font-weight: bold;
         }
 
-        /* --- Global Modal Styling --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -471,7 +467,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 15px;
-            flex-wrap: wrap; /* Supports mobile wrapping for history items */
+            flex-wrap: wrap;
         }
         .history-thumb {
             width: 80px; height: 60px;
@@ -485,7 +481,6 @@
         .history-text-preview { font-size: 13px; font-weight: 500; color: var(--text-main); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .history-actions { display: flex; gap: 6px; width: 100%; justify-content: flex-end; margin-top: 5px; }
         
-        /* Desktop override for history action layout */
         @media (min-width: 480px) {
             .history-actions { width: auto; margin-top: 0; }
         }
@@ -501,7 +496,6 @@
         .h-del:hover { background: #dc2626; }
         .no-history { text-align: center; color: var(--text-muted); padding: 30px 0; font-size: 13px; }
 
-        /* --- Beautiful Custom Confirmation Dialog --- */
         .confirm-modal {
             background: var(--bg-sidebar);
             border: 1px solid var(--border-color);
@@ -562,7 +556,6 @@
             background: #dc2626;
         }
 
-        /* --- MEDIA QUERY FOR PHONE SCREEN LAYOUT FIX --- */
         @media (max-width: 850px) {
             body {
                 padding: 15px 10px;
@@ -580,17 +573,17 @@
                 margin-bottom: 15px;
             }
             .editor-container {
-                flex-direction: column; /* Force stack vertically: Controls on top, Canvas on bottom */
+                flex-direction: column;
                 padding: 15px;
                 gap: 15px;
             }
             .controls {
-                max-height: none; /* Let it expand naturally on mobile scroll */
+                max-height: none;
                 overflow-y: visible;
             }
             .canvas-area {
                 min-height: 350px;
-                order: 2; /* Ensures Canvas is easily accessible */
+                order: 2;
             }
         }
     </style>
@@ -599,7 +592,6 @@
 
     <!-- Upper Control Buttons -->
     <div class="top-actions-container">
-        <!-- New Refresh Button -->
         <button class="refresh-btn" id="refreshWorkspaceBtn" title="အကုန်လုံးအစပြန်လုပ်မည် (Reset)">
             🔄
         </button>
@@ -626,7 +618,6 @@
         <!-- Controls Left Side -->
         <div class="controls">
             
-            <!-- Editing Status Indicator -->
             <div id="editingStatus" class="editing-indicator">📝 ဓါတ်ပုံဟောင်းအား ပြန်လည်ပြင်ဆင်နေပါသည်...</div>
 
             <!-- Canvas Background -->
@@ -756,7 +747,7 @@
         </div>
     </div>
 
-    <!-- New Custom Beautiful Refresh Confirmation Modal Overlay -->
+    <!-- Refresh Confirmation Modal Overlay -->
     <div class="modal-overlay" id="refreshConfirmOverlay">
         <div class="confirm-modal">
             <div class="confirm-icon">⚠️</div>
@@ -834,7 +825,6 @@
         let dragOffset = { x: 0, y: 0 };
         let textBoundingBox = { width: 200, height: 50 };
 
-        // State variable to remember which history item we are currently updating
         let currentEditingHistoryId = null;
 
         function drawImage1() {
@@ -866,15 +856,12 @@
         }
 
         function drawEverything() {
-            // Background Layer Color
             ctx.fillStyle = bgColor.value;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Drawings Objects
             drawImage1(); 
             drawImage2(); 
 
-            // Text Rendering Config
             ctx.save();
             const fSize = parseInt(textSize.value);
             const lHeight = 1.3 * fSize;
@@ -930,7 +917,6 @@
             }
         }
 
-        // --- File Loaders Event ---
         imageLoader1.addEventListener('change', (e) => {
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -958,7 +944,6 @@
             drawEverything();
         });
 
-        // Controls Event listeners
         bgColor.addEventListener('input', drawEverything);
         img1Shape.addEventListener('change', drawEverything);
         img1W.addEventListener('input', drawEverything);
@@ -972,7 +957,6 @@
         textStroke.addEventListener('change', drawEverything);
         textShadow.addEventListener('change', drawEverything);
 
-        // --- Drag and Drop Logic Layer (Touch Support Added) ---
         function handleStart(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
             const mouseX = (clientX - rect.left) * (canvas.width / rect.width);
@@ -1019,12 +1003,10 @@
             drawEverything();
         }
 
-        // Mouse Events
         canvas.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
         canvas.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
         window.addEventListener('mouseup', () => { draggingItem = null; });
 
-        // Touch Mobile Events
         canvas.addEventListener('touchstart', (e) => {
             if(e.touches.length === 1) {
                 handleStart(e.touches[0].clientX, e.touches[0].clientY);
@@ -1039,18 +1021,15 @@
         }, {passive: false});
         window.addEventListener('touchend', () => { draggingItem = null; });
 
-
-        // --- Beautiful Custom Refresh Triggers ---
         refreshWorkspaceBtn.addEventListener('click', () => {
-            refreshConfirmOverlay.classList.add('active'); // Open custom UI
+            refreshConfirmOverlay.classList.add('active');
         });
 
         cancelRefreshBtn.addEventListener('click', () => {
-            refreshConfirmOverlay.classList.remove('active'); // Close on Cancel
+            refreshConfirmOverlay.classList.remove('active');
         });
 
         confirmRefreshBtn.addEventListener('click', () => {
-            // Perform Reset Actions
             currentEditingHistoryId = null;
             editingStatus.style.display = "none";
 
@@ -1085,11 +1064,9 @@
             textPos = { x: 80, y: 480 };
 
             drawEverything();
-            refreshConfirmOverlay.classList.remove('active'); // Close modal when finished
+            refreshConfirmOverlay.classList.remove('active');
         });
 
-
-        // --- LocalStorage History System ---
         function saveToHistory(dataUrl) {
             let history = JSON.parse(localStorage.getItem('studio_history')) || [];
             const timestamp = new Date().toLocaleString();
@@ -1259,11 +1236,23 @@
             historyModalOverlay.classList.remove('active');
         }
 
+        // History မှတစ်ဆင့် ဒေါင်းလုဒ်လုပ်ရာတွင်လည်း ပုံမှန်အမည်ဖြင့် Gallery ထဲသို့ တိုက်ရိုက်ဝင်စေရန် ပြင်ဆင်မှု
         window.downloadHistoryItem = function(dataUrl, id) {
-            const link = document.createElement('a');
-            link.download = `studio-history-${id}.png`;
-            link.href = dataUrl;
-            link.click();
+            fetch(dataUrl)
+                .then(res => res.blob())
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `studio-history-${id}.png`;
+                    link.href = url;
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                })
+                .catch(err => console.error("Download Error:", err));
         };
 
         window.deleteHistoryItem = function(id) {
@@ -1278,7 +1267,6 @@
             renderHistory();
         };
 
-        // Modal Triggers
         openHistoryBtn.addEventListener('click', () => {
             renderHistory();
             historyModalOverlay.classList.add('active');
@@ -1292,7 +1280,7 @@
             if (e.target === historyModalOverlay) historyModalOverlay.classList.remove('active');
         });
 
-// Download Trigger Action
+        // Main Download ခလုတ်နှိပ်ပါက ဖုန်း Browser များတွင် Gallery ထဲသို့ သေသပ်လှပစွာ သိမ်းဆည်းရန် စနစ်
         downloadBtn.addEventListener('click', () => {
             if (!isImg1Loaded && !isImg2Loaded) {
                 alert("ကျေးဇူးပြု၍ ပြင်ဆင်ရန် ဖန်တီးမှုအချို့ ပြုလုပ်ပေးပါ။");
@@ -1302,21 +1290,22 @@
             const currentDataUrl = canvas.toDataURL('image/png');
             saveToHistory(currentDataUrl);
 
-            // ဖုန်း Browser များတွင် Gallery ထဲသို့ သေချာပေါက် ဒေါင်းလုဒ်ဆွဲနိုင်ရန် Blob စနစ်သုံးခြင်း
             canvas.toBlob((blob) => {
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
-                link.download = `studio-edited-${Date.now()}.png`; // ပုံအမည် မထပ်စေရန် Timestamp ထည့်ထားသည်
+                link.download = `studio-${Date.now()}.png`; 
                 link.href = url;
                 
-                document.body.appendChild(link); // iOS/Chrome mobile များအတွက် ခေတ္တ ထည့်သွင်းခြင်း
+                document.body.appendChild(link); 
                 link.click();
                 document.body.removeChild(link);
                 
-                // Memory ရှင်းလင်းရေး ပြန်လုပ်ခြင်း
                 setTimeout(() => URL.revokeObjectURL(url), 100);
             }, 'image/png');
         });
+
+        // Initial Canvas Drawing Start
+        drawEverything();
     </script>
 </body>
 </html>
