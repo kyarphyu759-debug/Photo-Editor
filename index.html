@@ -352,6 +352,31 @@
             color: var(--text-muted);
         }
 
+        /* Font Style Button Styles */
+        .font-style-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .font-style-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0;
+            transition: all 0.2s;
+        }
+        .font-style-btn.active {
+            background-color: var(--accent-color);
+            color: #0f172a;
+            border-color: var(--accent-color);
+        }
+
         .canvas-area {
             flex: 2;
             min-width: 280px;
@@ -389,10 +414,10 @@
             margin-top: 5px;
         }
 
-        .download-btn {
+        .save-btn {
             background: linear-gradient(135deg, var(--btn-success), #059669);
         }
-        .download-btn:hover {
+        .save-btn:hover {
             background: linear-gradient(135deg, var(--btn-success-hover), #047857);
             box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
         }
@@ -701,6 +726,16 @@
                     </div>
                 </div>
 
+                <!-- Font Styles Bold, Italic, Underline added here -->
+                <div class="input-unit">
+                    <span>စာလုံးစတိုင် (Font Style)</span>
+                    <div class="font-style-container">
+                        <button type="button" class="font-style-btn" id="btnBold">B</button>
+                        <button type="button" class="font-style-btn" id="btnItalic">I</button>
+                        <button type="button" class="font-style-btn" id="btnUnderline">U</button>
+                    </div>
+                </div>
+
                 <div class="grid-inputs">
                     <div class="input-unit">
                         <span>အနားသတ်လိုင်း (Stroke)</span>
@@ -725,7 +760,8 @@
                 </div>
             </div>
 
-            <button class="download-btn" id="downloadBtn">✨ ဓာတ်ပုံအားသိမ်းရန် (Download)</button>
+            <!-- Save Image Button -->
+            <button class="save-btn" id="saveBtn">✨ ဓာတ်ပုံအားသိမ်းရန် (Save Image)</button>
         </div>
 
         <!-- Canvas Workspace Side -->
@@ -796,9 +832,14 @@
         const textColor = document.getElementById('textColor');
         const textStroke = document.getElementById('textStroke');
         const textShadow = document.getElementById('textShadow');
-        const downloadBtn = document.getElementById('downloadBtn');
+        const saveBtn = document.getElementById('saveBtn'); 
         const editingStatus = document.getElementById('editingStatus');
         const refreshWorkspaceBtn = document.getElementById('refreshWorkspaceBtn');
+
+        // Font Style Buttons
+        const btnBold = document.getElementById('btnBold');
+        const btnItalic = document.getElementById('btnItalic');
+        const btnUnderline = document.getElementById('btnUnderline');
 
         // History UI Elements
         const historyModalOverlay = document.getElementById('historyModalOverlay');
@@ -816,6 +857,10 @@
         let img2 = new Image();
         let isImg1Loaded = false;
         let isImg2Loaded = false;
+
+        let isBold = false;
+        let isItalic = false;
+        let isUnderline = false;
 
         let img1Pos = { x: 80, y: 100 };
         let img2Pos = { x: 450, y: 100 };
@@ -867,7 +912,12 @@
             const lHeight = 1.3 * fSize;
             
             ctx.fillStyle = textColor.value;
-            ctx.font = `bold ${fSize}px ${textFont.value}`;
+            
+            // Build dynamic font style string
+            let fontModifiers = "";
+            if (isItalic) fontModifiers += "italic ";
+            if (isBold) fontModifiers += "bold ";
+            ctx.font = `${fontModifiers}${fSize}px ${textFont.value}`;
             ctx.textBaseline = "top";
 
             if (textShadow.value === 'soft') {
@@ -903,6 +953,19 @@
 
                 const lineWidth = ctx.measureText(line).width;
                 if (lineWidth > maxLineWidth) maxLineWidth = lineWidth;
+
+                // Handle Underline logic manually for Canvas
+                if (isUnderline) {
+                    ctx.save();
+                    ctx.shadowColor = "transparent"; 
+                    ctx.strokeStyle = textColor.value;
+                    ctx.lineWidth = Math.max(1, fSize * 0.06);
+                    ctx.beginPath();
+                    ctx.moveTo(textPos.x, currentY + fSize * 1.05);
+                    ctx.lineTo(textPos.x + lineWidth, currentY + fSize * 1.05);
+                    ctx.stroke();
+                    ctx.restore();
+                }
             });
 
             ctx.restore();
@@ -910,12 +973,31 @@
             textBoundingBox.width = maxLineWidth > 0 ? maxLineWidth : 100;
             textBoundingBox.height = lines.length * lHeight;
 
-            if (!isImg1Loaded && !isImg2Loaded) {
+            if (!isImg1Loaded && !isImg2Loaded && !textInput.value.trim()) {
                 ctx.fillStyle = "#64748b";
                 ctx.font = "16px sans-serif";
                 ctx.fillText("ဘယ်ဘက်မှ ဓာတ်ပုံများကို ရွေးချယ်တင်သွင်းပါ သို့မဟုတ် History မှ ခေါ်ယူပါ...", 150, 290);
             }
         }
+
+        // Font Style Toggle Handlers
+        btnBold.addEventListener('click', () => {
+            isBold = !isBold;
+            btnBold.classList.toggle('active', isBold);
+            drawEverything();
+        });
+
+        btnItalic.addEventListener('click', () => {
+            isItalic = !isItalic;
+            btnItalic.classList.toggle('active', isItalic);
+            drawEverything();
+        });
+
+        btnUnderline.addEventListener('click', () => {
+            isUnderline = !isUnderline;
+            btnUnderline.classList.toggle('active', isUnderline);
+            drawEverything();
+        });
 
         imageLoader1.addEventListener('change', (e) => {
             const reader = new FileReader();
@@ -1040,6 +1122,11 @@
             imageLoader1.value = "";
             imageLoader2.value = "";
 
+            isBold = false; isItalic = false; isUnderline = false;
+            btnBold.classList.remove('active');
+            btnItalic.classList.remove('active');
+            btnUnderline.classList.remove('active');
+
             bgColor.value = "#ffffff";
             img1W.value = "300";
             img1H.value = "300";
@@ -1095,7 +1182,10 @@
                 textStroke: textStroke.value,
                 textShadow: textShadow.value,
                 textX: textPos.x,
-                textY: textPos.y
+                textY: textPos.y,
+                isBold: isBold,
+                isItalic: isItalic,
+                isUnderline: isUnderline
             };
 
             if (currentEditingHistoryId !== null) {
@@ -1180,6 +1270,13 @@
             textStroke.value = data.textStroke || "none";
             textShadow.value = data.textShadow || "none";
             
+            isBold = !!data.isBold;
+            isItalic = !!data.isItalic;
+            isUnderline = !!data.isUnderline;
+            btnBold.classList.toggle('active', isBold);
+            btnItalic.classList.toggle('active', isItalic);
+            btnUnderline.classList.toggle('active', isUnderline);
+
             textPos.x = data.textX !== undefined ? data.textX : 80;
             textPos.y = data.textY !== undefined ? data.textY : 480;
 
@@ -1236,7 +1333,6 @@
             historyModalOverlay.classList.remove('active');
         }
 
-        // History မှတစ်ဆင့် ဒေါင်းလုဒ်လုပ်ရာတွင်လည်း ပုံမှန်အမည်ဖြင့် Gallery ထဲသို့ တိုက်ရိုက်ဝင်စေရန် ပြင်ဆင်မှု
         window.downloadHistoryItem = function(dataUrl, id) {
             fetch(dataUrl)
                 .then(res => res.blob())
@@ -1280,13 +1376,8 @@
             if (e.target === historyModalOverlay) historyModalOverlay.classList.remove('active');
         });
 
-        // Main Download ခလုတ်နှိပ်ပါက ဖုန်း Browser များတွင် Gallery ထဲသို့ သေသပ်လှပစွာ သိမ်းဆည်းရန် စနစ်
-        downloadBtn.addEventListener('click', () => {
-            if (!isImg1Loaded && !isImg2Loaded) {
-                alert("ကျေးဇူးပြု၍ ပြင်ဆင်ရန် ဖန်တီးမှုအချို့ ပြုလုပ်ပေးပါ။");
-                return;
-            }
-            
+        // Smart Save Button Logic (Saves perfectly even without loading external images)
+        saveBtn.addEventListener('click', () => {
             const currentDataUrl = canvas.toDataURL('image/png');
             saveToHistory(currentDataUrl);
 
