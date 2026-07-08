@@ -180,7 +180,7 @@
         header {
             margin-bottom: 25px;
             text-align: center;
-            margin-top: 40px;
+            margin-top: 40px; /* Added top margin for mobile header space */
         }
 
         header h1 {
@@ -198,9 +198,10 @@
             font-size: 14px;
         }
 
+        /* FIXED MAIN CONTAINER FOR ANDROID/MOBILE VIEW */
         .editor-container {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Allows wrapping on phone screens */
             gap: 25px;
             max-width: 1350px;
             width: 100%;
@@ -211,9 +212,10 @@
             border: 1px solid var(--border-color);
         }
 
+        /* Left Controls Side - Flexible on Mobile */
         .controls {
             flex: 1;
-            min-width: 280px;
+            min-width: 280px; /* Prevents squishing */
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -352,9 +354,10 @@
             color: var(--text-muted);
         }
 
+        /* Canvas Workspace Side - Flexible on Mobile */
         .canvas-area {
             flex: 2;
-            min-width: 280px;
+            min-width: 280px; /* Prevents squishing */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -364,7 +367,7 @@
             border-radius: 12px;
             border: 1px dashed var(--border-color);
             padding: 20px;
-            min-height: 450px;
+            min-height: 450px; /* Reduced minimum height to fit screens better */
             box-shadow: inset 0 4px 12px rgba(0,0,0,0.15);
         }
 
@@ -409,6 +412,7 @@
             font-weight: bold;
         }
 
+        /* --- Global Modal Styling --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -467,7 +471,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 15px;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Supports mobile wrapping for history items */
         }
         .history-thumb {
             width: 80px; height: 60px;
@@ -481,6 +485,7 @@
         .history-text-preview { font-size: 13px; font-weight: 500; color: var(--text-main); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .history-actions { display: flex; gap: 6px; width: 100%; justify-content: flex-end; margin-top: 5px; }
         
+        /* Desktop override for history action layout */
         @media (min-width: 480px) {
             .history-actions { width: auto; margin-top: 0; }
         }
@@ -496,6 +501,7 @@
         .h-del:hover { background: #dc2626; }
         .no-history { text-align: center; color: var(--text-muted); padding: 30px 0; font-size: 13px; }
 
+        /* --- Beautiful Custom Confirmation Dialog --- */
         .confirm-modal {
             background: var(--bg-sidebar);
             border: 1px solid var(--border-color);
@@ -556,6 +562,7 @@
             background: #dc2626;
         }
 
+        /* --- MEDIA QUERY FOR PHONE SCREEN LAYOUT FIX --- */
         @media (max-width: 850px) {
             body {
                 padding: 15px 10px;
@@ -573,26 +580,34 @@
                 margin-bottom: 15px;
             }
             .editor-container {
-                flex-direction: column;
+                flex-direction: column; /* Force stack vertically: Controls on top, Canvas on bottom */
                 padding: 15px;
                 gap: 15px;
             }
             .controls {
-                max-height: none;
+                max-height: none; /* Let it expand naturally on mobile scroll */
                 overflow-y: visible;
             }
             .canvas-area {
                 min-height: 350px;
-                order: 2;
+                order: 2; /* Ensures Canvas is easily accessible */
             }
         }
     </style>
 </head>
 <body>
 
+    <!-- Upper Control Buttons -->
     <div class="top-actions-container">
-        <button class="refresh-btn" id="refreshWorkspaceBtn" title="အကုန်လုံးအစပြန်လုပ်မည် (Reset)">🔄</button>
-        <button class="history-btn" id="openHistoryBtn">⏱️ History (မှတ်တမ်း)</button>
+        <!-- New Refresh Button -->
+        <button class="refresh-btn" id="refreshWorkspaceBtn" title="အကုန်လုံးအစပြန်လုပ်မည် (Reset)">
+            🔄
+        </button>
+
+        <button class="history-btn" id="openHistoryBtn">
+            ⏱️ History (မှတ်တမ်း)
+        </button>
+
         <div class="action-pill">
             <span class="theme-label" id="themeText">DARK MODE</span>
             <label class="switch">
@@ -608,17 +623,23 @@
     </header>
 
     <div class="editor-container">
+        <!-- Controls Left Side -->
         <div class="controls">
+            
+            <!-- Editing Status Indicator -->
             <div id="editingStatus" class="editing-indicator">📝 ဓါတ်ပုံဟောင်းအား ပြန်လည်ပြင်ဆင်နေပါသည်...</div>
 
+            <!-- Canvas Background -->
             <div class="section-card" style="border-left: 4px solid var(--accent-color);">
                 <div class="section-title">🎨 ကင်းဗတ်စ် နောက်ခံအရောင်</div>
                 <input type="color" id="bgColor" value="#ffffff">
             </div>
 
+            <!-- Image 1 Controls -->
             <div class="section-card">
                 <div class="section-title">🖼️ ပထမပုံ (First Image)</div>
                 <input type="file" id="imageLoader1" accept="image/*">
+                
                 <div class="grid-inputs-3">
                     <div class="input-unit">
                         <span>Width (px)</span>
@@ -636,15 +657,18 @@
                         </select>
                     </div>
                 </div>
+                
                 <div class="input-unit" style="margin-top: 5px;">
                     <div class="slider-header"><span>မှိန်အား (Opacity)</span><span id="op1Val">100%</span></div>
                     <input type="range" id="img1Opacity" min="0" max="100" value="100">
                 </div>
             </div>
 
+            <!-- Image 2 Controls -->
             <div class="section-card">
                 <div class="section-title">📷 ဒုတိယပုံ (Second Image)</div>
                 <input type="file" id="imageLoader2" accept="image/*">
+                
                 <div class="grid-inputs">
                     <div class="input-unit">
                         <span>Width (px)</span>
@@ -655,15 +679,18 @@
                         <input type="number" id="img2H" value="200">
                     </div>
                 </div>
+                
                 <div class="input-unit" style="margin-top: 5px;">
                     <div class="slider-header"><span>မှိန်အား (Opacity)</span><span id="op2Val">100%</span></div>
                     <input type="range" id="img2Opacity" min="0" max="100" value="100">
                 </div>
             </div>
 
+            <!-- Text Controls -->
             <div class="section-card">
                 <div class="section-title">✍️ စာသားနှင့် ဖောင့်ဒီဇိုင်း</div>
                 <textarea id="textInput" rows="2">မင်္ဂလာပါ ခင်ဗျာ 😊🔥</textarea>
+                
                 <div class="grid-inputs-3">
                     <div class="input-unit">
                         <span>Size (px)</span>
@@ -682,6 +709,7 @@
                         <input type="color" id="textColor" value="#ffffff" style="height: 38px;">
                     </div>
                 </div>
+
                 <div class="grid-inputs">
                     <div class="input-unit">
                         <span>အနားသတ်လိုင်း (Stroke)</span>
@@ -709,21 +737,26 @@
             <button class="download-btn" id="downloadBtn">✨ ဓာတ်ပုံအားသိမ်းရန် (Download)</button>
         </div>
 
+        <!-- Canvas Workspace Side -->
         <div class="canvas-area">
             <canvas id="editorCanvas" width="800" height="600"></canvas>
         </div>
     </div>
 
+    <!-- History Modal Overlay -->
     <div class="modal-overlay" id="historyModalOverlay">
         <div class="history-modal">
             <div class="modal-header">
                 <h2>⏱️ ဖန်တီးခဲ့သော ဓာတ်ပုံမှတ်တမ်းများ</h2>
                 <button class="close-modal" id="closeHistoryBtn">&times;</button>
             </div>
-            <div class="history-list" id="historyListContainer"></div>
+            <div class="history-list" id="historyListContainer">
+                <!-- History Items Inject Here -->
+            </div>
         </div>
     </div>
 
+    <!-- New Custom Beautiful Refresh Confirmation Modal Overlay -->
     <div class="modal-overlay" id="refreshConfirmOverlay">
         <div class="confirm-modal">
             <div class="confirm-icon">⚠️</div>
@@ -740,6 +773,7 @@
         const canvas = document.getElementById('editorCanvas');
         const ctx = canvas.getContext('2d');
 
+        // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
         const themeText = document.getElementById('themeText');
 
@@ -753,6 +787,7 @@
             }
         });
 
+        // Controls Elements
         const bgColor = document.getElementById('bgColor');
         const imageLoader1 = document.getElementById('imageLoader1');
         const imageLoader2 = document.getElementById('imageLoader2');
@@ -774,15 +809,18 @@
         const editingStatus = document.getElementById('editingStatus');
         const refreshWorkspaceBtn = document.getElementById('refreshWorkspaceBtn');
 
+        // History UI Elements
         const historyModalOverlay = document.getElementById('historyModalOverlay');
         const openHistoryBtn = document.getElementById('openHistoryBtn');
         const closeHistoryBtn = document.getElementById('closeHistoryBtn');
         const historyListContainer = document.getElementById('historyListContainer');
 
+        // Custom Refresh Modal Elements
         const refreshConfirmOverlay = document.getElementById('refreshConfirmOverlay');
         const cancelRefreshBtn = document.getElementById('cancelRefreshBtn');
         const confirmRefreshBtn = document.getElementById('confirmRefreshBtn');
 
+        // State Trackers
         let img1 = new Image();
         let img2 = new Image();
         let isImg1Loaded = false;
@@ -795,6 +833,8 @@
         let draggingItem = null;
         let dragOffset = { x: 0, y: 0 };
         let textBoundingBox = { width: 200, height: 50 };
+
+        // State variable to remember which history item we are currently updating
         let currentEditingHistoryId = null;
 
         function drawImage1() {
@@ -826,12 +866,15 @@
         }
 
         function drawEverything() {
+            // Background Layer Color
             ctx.fillStyle = bgColor.value;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // Drawings Objects
             drawImage1(); 
             drawImage2(); 
 
+            // Text Rendering Config
             ctx.save();
             const fSize = parseInt(textSize.value);
             const lHeight = 1.3 * fSize;
@@ -887,6 +930,7 @@
             }
         }
 
+        // --- File Loaders Event ---
         imageLoader1.addEventListener('change', (e) => {
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -914,6 +958,7 @@
             drawEverything();
         });
 
+        // Controls Event listeners
         bgColor.addEventListener('input', drawEverything);
         img1Shape.addEventListener('change', drawEverything);
         img1W.addEventListener('input', drawEverything);
@@ -927,6 +972,7 @@
         textStroke.addEventListener('change', drawEverything);
         textShadow.addEventListener('change', drawEverything);
 
+        // --- Drag and Drop Logic Layer (Touch Support Added) ---
         function handleStart(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
             const mouseX = (clientX - rect.left) * (canvas.width / rect.width);
@@ -973,10 +1019,12 @@
             drawEverything();
         }
 
+        // Mouse Events
         canvas.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
         canvas.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
         window.addEventListener('mouseup', () => { draggingItem = null; });
 
+        // Touch Mobile Events
         canvas.addEventListener('touchstart', (e) => {
             if(e.touches.length === 1) {
                 handleStart(e.touches[0].clientX, e.touches[0].clientY);
@@ -991,15 +1039,18 @@
         }, {passive: false});
         window.addEventListener('touchend', () => { draggingItem = null; });
 
+
+        // --- Beautiful Custom Refresh Triggers ---
         refreshWorkspaceBtn.addEventListener('click', () => {
-            refreshConfirmOverlay.classList.add('active');
+            refreshConfirmOverlay.classList.add('active'); // Open custom UI
         });
 
         cancelRefreshBtn.addEventListener('click', () => {
-            refreshConfirmOverlay.classList.remove('active');
+            refreshConfirmOverlay.classList.remove('active'); // Close on Cancel
         });
 
         confirmRefreshBtn.addEventListener('click', () => {
+            // Perform Reset Actions
             currentEditingHistoryId = null;
             editingStatus.style.display = "none";
 
@@ -1034,9 +1085,11 @@
             textPos = { x: 80, y: 480 };
 
             drawEverything();
-            refreshConfirmOverlay.classList.remove('active');
+            refreshConfirmOverlay.classList.remove('active'); // Close modal when finished
         });
 
+
+        // --- LocalStorage History System ---
         function saveToHistory(dataUrl) {
             let history = JSON.parse(localStorage.getItem('studio_history')) || [];
             const timestamp = new Date().toLocaleString();
@@ -1115,18 +1168,13 @@
                     </div>
                     <div class="history-actions">
                         <button class="history-action-btn h-edit" data-id="${item.id}">✏️ Edit ပြန်လုပ်မည်</button>
-                        <button class="history-action-btn h-dl" data-img="${item.image}">⬇️ သိမ်းရန်</button>
+                        <button class="history-action-btn h-dl" onclick="downloadHistoryItem('${item.image}', ${item.id})">⬇️ သိမ်းရန်</button>
                         <button class="history-action-btn h-del" onclick="deleteHistoryItem(${item.id})">❌</button>
                     </div>
                 `;
                 
                 div.querySelector('.h-edit').addEventListener('click', () => {
                     loadHistoryToEditWorkspace(item.id);
-                });
-
-                div.querySelector('.h-dl').addEventListener('click', (e) => {
-                    const imgData = e.target.getAttribute('data-img');
-                    triggerImageSave(imgData);
                 });
 
                 historyListContainer.appendChild(div);
@@ -1143,6 +1191,7 @@
             }
 
             const data = targetItem.metadata;
+            
             currentEditingHistoryId = itemId;
             editingStatus.style.display = "block";
 
@@ -1210,6 +1259,13 @@
             historyModalOverlay.classList.remove('active');
         }
 
+        window.downloadHistoryItem = function(dataUrl, id) {
+            const link = document.createElement('a');
+            link.download = `studio-history-${id}.png`;
+            link.href = dataUrl;
+            link.click();
+        };
+
         window.deleteHistoryItem = function(id) {
             let history = JSON.parse(localStorage.getItem('studio_history')) || [];
             history = history.filter(item => item.id !== id);
@@ -1222,6 +1278,7 @@
             renderHistory();
         };
 
+        // Modal Triggers
         openHistoryBtn.addEventListener('click', () => {
             renderHistory();
             historyModalOverlay.classList.add('active');
@@ -1235,38 +1292,31 @@
             if (e.target === historyModalOverlay) historyModalOverlay.classList.remove('active');
         });
 
-        // CENTRAL DOWNLOAD CONTROLLER (FOR WEB AND ANDROID NATIVE GALLERY)
-        function triggerImageSave(dataUrl) {
-            // Android App ရဲ့ Interface (WebView) ရှိမရှိ စစ်ဆေးသည်
-            if (typeof AndroidInterface !== "undefined") {
-                // Header (data:image/png;base64,) ကို ဖြတ်ပြီး Base64 စာသား သက်သက်ကို Android ထံ ပို့သည်
-                const base64Str = dataUrl.replace(/^data:image\/png;base64,/, "");
-                AndroidInterface.saveImageToGallery(base64Str);
-            } else {
-                // ရိုးရိုး Browser ထဲမှာဆိုရင် ပုံမှန်အတိုင်း File အဖြစ် ဒေါင်းလုဒ်လုပ်ပေးမည်
-                const link = document.createElement('a');
-                link.download = `studio-canvas-${Date.now()}.png`;
-                link.href = dataUrl;
-                link.click();
-            }
-        }
-
-        // Main Download Button Click
+// Download Trigger Action
         downloadBtn.addEventListener('click', () => {
             if (!isImg1Loaded && !isImg2Loaded) {
                 alert("ကျေးဇူးပြု၍ ပြင်ဆင်ရန် ဖန်တီးမှုအချို့ ပြုလုပ်ပေးပါ။");
                 return;
             }
-            const currentDataUrl = canvas.toDataURL('image/png');
             
-            // ၁။ History ထဲမှာ မှတ်တမ်းသိမ်းဆည်းခြင်း
+            const currentDataUrl = canvas.toDataURL('image/png');
             saveToHistory(currentDataUrl);
 
-            // ၂။ ဖုန်းထဲ (Gallery သို့မဟုတ် Browser Download) သို့ သိမ်းခြင်း
-            triggerImageSave(currentDataUrl);
+            // ဖုန်း Browser များတွင် Gallery ထဲသို့ သေချာပေါက် ဒေါင်းလုဒ်ဆွဲနိုင်ရန် Blob စနစ်သုံးခြင်း
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = `studio-edited-${Date.now()}.png`; // ပုံအမည် မထပ်စေရန် Timestamp ထည့်ထားသည်
+                link.href = url;
+                
+                document.body.appendChild(link); // iOS/Chrome mobile များအတွက် ခေတ္တ ထည့်သွင်းခြင်း
+                link.click();
+                document.body.removeChild(link);
+                
+                // Memory ရှင်းလင်းရေး ပြန်လုပ်ခြင်း
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+            }, 'image/png');
         });
-
-        setTimeout(drawEverything, 500);
     </script>
 </body>
 </html>
