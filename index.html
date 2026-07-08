@@ -59,7 +59,7 @@
             position: relative;
         }
 
-        /* Upper Controls Container */
+        /* Upper Controls Container - Responsive Support */
         .top-actions-container {
             position: absolute;
             top: 20px;
@@ -67,6 +67,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            z-index: 10;
         }
 
         /* Action Buttons, Switches & Refresh */
@@ -179,6 +180,7 @@
         header {
             margin-bottom: 25px;
             text-align: center;
+            margin-top: 40px; /* Added top margin for mobile header space */
         }
 
         header h1 {
@@ -196,8 +198,10 @@
             font-size: 14px;
         }
 
+        /* FIXED MAIN CONTAINER FOR ANDROID/MOBILE VIEW */
         .editor-container {
             display: flex;
+            flex-wrap: wrap; /* Allows wrapping on phone screens */
             gap: 25px;
             max-width: 1350px;
             width: 100%;
@@ -208,8 +212,10 @@
             border: 1px solid var(--border-color);
         }
 
+        /* Left Controls Side - Flexible on Mobile */
         .controls {
             flex: 1;
+            min-width: 280px; /* Prevents squishing */
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -348,9 +354,10 @@
             color: var(--text-muted);
         }
 
-        /* Canvas Workspace Side */
+        /* Canvas Workspace Side - Flexible on Mobile */
         .canvas-area {
             flex: 2;
+            min-width: 280px; /* Prevents squishing */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -360,7 +367,7 @@
             border-radius: 12px;
             border: 1px dashed var(--border-color);
             padding: 20px;
-            min-height: 600px;
+            min-height: 450px; /* Reduced minimum height to fit screens better */
             box-shadow: inset 0 4px 12px rgba(0,0,0,0.15);
         }
 
@@ -464,6 +471,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 15px;
+            flex-wrap: wrap; /* Supports mobile wrapping for history items */
         }
         .history-thumb {
             width: 80px; height: 60px;
@@ -472,10 +480,16 @@
             background: #0f172a;
             border: 1px solid var(--border-color);
         }
-        .history-meta { flex: 1; display: flex; flex-direction: column; gap: 4px;}
+        .history-meta { flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 4px;}
         .history-date { font-size: 11px; color: var(--text-muted); }
         .history-text-preview { font-size: 13px; font-weight: 500; color: var(--text-main); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-        .history-actions { display: flex; gap: 6px; }
+        .history-actions { display: flex; gap: 6px; width: 100%; justify-content: flex-end; margin-top: 5px; }
+        
+        /* Desktop override for history action layout */
+        @media (min-width: 480px) {
+            .history-actions { width: auto; margin-top: 0; }
+        }
+
         .history-action-btn {
             padding: 6px 12px; font-size: 11px; font-weight: 600; border-radius: 6px; width: auto; margin: 0; white-space: nowrap;
         }
@@ -546,6 +560,38 @@
         }
         .btn-danger-confirm:hover {
             background: #dc2626;
+        }
+
+        /* --- MEDIA QUERY FOR PHONE SCREEN LAYOUT FIX --- */
+        @media (max-width: 850px) {
+            body {
+                padding: 15px 10px;
+            }
+            .top-actions-container {
+                position: relative;
+                top: 0;
+                right: 0;
+                justify-content: center;
+                margin-bottom: 15px;
+                width: 100%;
+            }
+            header {
+                margin-top: 10px;
+                margin-bottom: 15px;
+            }
+            .editor-container {
+                flex-direction: column; /* Force stack vertically: Controls on top, Canvas on bottom */
+                padding: 15px;
+                gap: 15px;
+            }
+            .controls {
+                max-height: none; /* Let it expand naturally on mobile scroll */
+                overflow-y: visible;
+            }
+            .canvas-area {
+                min-height: 350px;
+                order: 2; /* Ensures Canvas is easily accessible */
+            }
         }
     </style>
 </head>
@@ -926,11 +972,11 @@
         textStroke.addEventListener('change', drawEverything);
         textShadow.addEventListener('change', drawEverything);
 
-        // --- Drag and Drop Logic Layer ---
-        canvas.addEventListener('mousedown', (e) => {
+        // --- Drag and Drop Logic Layer (Touch Support Added) ---
+        function handleStart(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
-            const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+            const mouseX = (clientX - rect.left) * (canvas.width / rect.width);
+            const mouseY = (clientY - rect.top) * (canvas.height / rect.height);
 
             if (mouseX >= textPos.x && mouseX <= textPos.x + textBoundingBox.width &&
                 mouseY >= textPos.y && mouseY <= textPos.y + textBoundingBox.height) {
@@ -955,13 +1001,13 @@
                 dragOffset.y = mouseY - img1Pos.y;
                 return;
             }
-        });
+        }
 
-        canvas.addEventListener('mousemove', (e) => {
+        function handleMove(clientX, clientY) {
             if (!draggingItem) return;
             const rect = canvas.getBoundingClientRect();
-            const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+            const mouseX = (clientX - rect.left) * (canvas.width / rect.width);
+            const mouseY = (clientY - rect.top) * (canvas.height / rect.height);
 
             if (draggingItem === 'text') {
                 textPos.x = mouseX - dragOffset.x; textPos.y = mouseY - dragOffset.y;
@@ -971,9 +1017,27 @@
                 img1Pos.x = mouseX - dragOffset.x; img1Pos.y = mouseY - dragOffset.y;
             }
             drawEverything();
-        });
+        }
 
+        // Mouse Events
+        canvas.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
+        canvas.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
         window.addEventListener('mouseup', () => { draggingItem = null; });
+
+        // Touch Mobile Events
+        canvas.addEventListener('touchstart', (e) => {
+            if(e.touches.length === 1) {
+                handleStart(e.touches[0].clientX, e.touches[0].clientY);
+                e.preventDefault();
+            }
+        }, {passive: false});
+        canvas.addEventListener('touchmove', (e) => {
+            if(e.touches.length === 1) {
+                handleMove(e.touches[0].clientX, e.touches[0].clientY);
+                e.preventDefault();
+            }
+        }, {passive: false});
+        window.addEventListener('touchend', () => { draggingItem = null; });
 
 
         // --- Beautiful Custom Refresh Triggers ---
