@@ -1,1402 +1,595 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Studio - Creative Photo Editor</title>
-    <!-- Google Fonts - Inter & Pyidaungsu -->
+  <link rel="apple-touch-icon" href="logo.png" />
+  <link rel="icon" type="image/png" href="logo.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#152130" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />  
+    <title>Studio Canvas</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pyidaungsu:wght@400;700&display=swap" rel="stylesheet">
-    
+
     <style>
-        /* CSS Variables - Default Dark Mode */
         :root {
             --bg-main: #0f172a;
             --bg-sidebar: #1e293b;
             --bg-card: #334155;
             --accent-color: #38bdf8;
-            --accent-hover: #0ea5e9;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: #475569;
             --btn-success: #10b981;
-            --btn-success-hover: #059669;
-            --canvas-bg: #0f172a;
-            --canvas-dot: #334155;
-            --modal-bg: rgba(15, 23, 42, 0.8);
         }
 
-        /* Light Mode Colors */
-        [data-theme="light"] {
-            --bg-main: #f1f5f9;
-            --bg-sidebar: #ffffff;
-            --bg-card: #f8fafc;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #cbd5e1;
-            --btn-success: #10b981;
-            --btn-success-hover: #059669;
-            --canvas-bg: #e2e8f0;
-            --canvas-dot: #cbd5e1;
-            --modal-bg: rgba(255, 255, 255, 0.8);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Inter', 'Pyidaungsu', sans-serif;
             background-color: var(--bg-main);
             color: var(--text-main);
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 30px 20px;
-            position: relative;
+            overflow: hidden;
         }
 
-        /* Upper Controls Container - Responsive Support */
-        .top-actions-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 10;
-        }
-
-        /* Action Buttons, Switches & Refresh */
-        .refresh-btn {
-            background: var(--bg-sidebar);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            font-size: 15px;
-            padding: 0;
-            margin: 0;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .refresh-btn:hover {
-            transform: rotate(45deg) scale(1.05);
-            border-color: #ef4444;
-        }
-
-        .action-pill {
-            background: var(--bg-sidebar);
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .history-btn {
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-main);
-            background: var(--bg-sidebar);
-            border: 1px solid var(--border-color);
-            padding: 6px 14px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            width: auto;
-            margin: 0;
-            transition: transform 0.2s;
-        }
-        .history-btn:hover {
-            transform: scale(1.03);
-            border-color: var(--accent-color);
-        }
-
-        .theme-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 22px;
-        }
-
-        .switch input { 
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #64748b;
-            transition: .3s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--accent-color);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-
-        header {
-            margin-bottom: 25px;
-            text-align: center;
-            margin-top: 40px;
-        }
-
-        header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            background: linear-gradient(to right, #38bdf8, #818cf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .editor-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 25px;
-            max-width: 1350px;
-            width: 100%;
-            background: var(--bg-sidebar);
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--border-color);
-        }
-
-        .controls {
-            flex: 1;
-            min-width: 280px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-height: 80vh;
-            overflow-y: auto;
-            padding-right: 8px;
-        }
-
-        .controls::-webkit-scrollbar { width: 6px; }
-        .controls::-webkit-scrollbar-track { background: transparent; }
-        .controls::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 10px;
-        }
-
-        .section-card {
-            background: rgba(148, 163, 184, 0.05);
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--accent-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        label {
-            font-size: 13px;
-            color: var(--text-main);
-            font-weight: 500;
-        }
-
-        input[type="text"], input[type="number"], input[type="file"], textarea, select {
-            width: 100%;
-            padding: 10px 12px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-main);
-            font-size: 13.5px;
-            outline: none;
-        }
-
-        input:focus, textarea:focus, select:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-        }
-
-        input[type="file"]::file-selector-button {
-            background: var(--border-color);
-            color: var(--text-main);
-            border: none;
-            padding: 4px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 55px;
-            font-family: inherit;
-        }
-
-        .grid-inputs {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .grid-inputs-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .input-unit {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .input-unit span {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
-        input[type="color"] {
-            -webkit-appearance: none;
-            border: none;
-            width: 100%;
-            height: 40px;
-            border-radius: 8px;
-            cursor: pointer;
-            background: transparent;
-        }
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            background: var(--bg-card);
-            border-radius: 5px;
-            outline: none;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            cursor: pointer;
-        }
-
-        .slider-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        /* Font Style Button Styles */
-        .font-style-container {
-            display: flex;
-            gap: 8px;
-            margin-top: 4px;
-        }
-        .font-style-btn {
-            flex: 1;
-            padding: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 0;
-            transition: all 0.2s;
-        }
-        .font-style-btn.active {
-            background-color: var(--accent-color);
-            color: #0f172a;
-            border-color: var(--accent-color);
-        }
-
-        .canvas-area {
-            flex: 2;
-            min-width: 280px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: var(--canvas-bg);
-            background-image: radial-gradient(var(--canvas-dot) 1px, transparent 1px);
-            background-size: 20px 20px;
-            border-radius: 12px;
-            border: 1px dashed var(--border-color);
-            padding: 20px;
-            min-height: 450px;
-            box-shadow: inset 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        canvas {
-            background-color: transparent;
-            border-radius: 4px;
-            box-shadow: 0 25px 50px -12 rgba(0, 0, 0, 0.4);
-            max-width: 100%;
-            height: auto;
-        }
-
-        button {
-            width: 100%;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 15px;
-            letter-spacing: 0.3px;
-            margin-top: 5px;
-        }
-
-        .save-btn {
-            background: linear-gradient(135deg, var(--btn-success), #059669);
-        }
-        .save-btn:hover {
-            background: linear-gradient(135deg, var(--btn-success-hover), #047857);
-            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
-        }
-
-        .editing-indicator {
-            background: #eab308 !important;
-            color: #0f172a !important;
-            display: none;
-            font-size: 13px;
-            padding: 6px;
-            text-align: center;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        .modal-overlay.active {
-            opacity: 1; pointer-events: auto;
-        }
-        .history-modal {
-            background: var(--bg-sidebar);
-            border: 1px solid var(--border-color);
-            width: 95%; max-width: 750px;
-            max-height: 80vh;
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-        }
-        .modal-header {
+        /* Top Header */
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            padding: 10px 15px;
+            background: var(--bg-sidebar);
             border-bottom: 1px solid var(--border-color);
+            height: 55px;
         }
-        .modal-header h2 { font-size: 18px; color: var(--accent-color); }
-        .close-modal {
-            background: transparent; color: var(--text-muted);
-            font-size: 20px; padding: 0; margin: 0; width: auto; cursor: pointer;
+        .header h1 { font-size: 16px; color: var(--accent-color); font-weight: 700; }
+        .header-btns { display: flex; gap: 6px; }
+        .btn-sm {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
         }
-        .close-modal:hover { color: var(--text-main); }
-        
-        .history-list {
-            overflow-y: auto;
+
+        /* Main Workspace Container */
+        .workspace {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            padding-right: 5px;
+            position: relative;
+            overflow: hidden;
         }
-        .history-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            border-radius: 8px;
+
+        /* Canvas Display Area */
+        .canvas-container {
+            flex: 1;
             display: flex;
+            justify-content: center;
             align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            flex-wrap: wrap;
+            background: #020617;
+            padding: 10px;
+            position: relative;
+            overflow: auto;
         }
-        .history-thumb {
-            width: 80px; height: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-            background: #0f172a;
-            border: 1px solid var(--border-color);
-        }
-        .history-meta { flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 4px;}
-        .history-date { font-size: 11px; color: var(--text-muted); }
-        .history-text-preview { font-size: 13px; font-weight: 500; color: var(--text-main); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-        .history-actions { display: flex; gap: 6px; width: 100%; justify-content: flex-end; margin-top: 5px; }
-        
-        @media (min-width: 480px) {
-            .history-actions { width: auto; margin-top: 0; }
+        canvas {
+            border-radius: 6px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            touch-action: none; /* Prevents scrolling while dragging on canvas */
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
-        .history-action-btn {
-            padding: 6px 12px; font-size: 11px; font-weight: 600; border-radius: 6px; width: auto; margin: 0; white-space: nowrap;
-        }
-        .h-edit { background: #eab308; color: #0f172a; }
-        .h-edit:hover { background: #ca8a04; }
-        .h-dl { background: var(--accent-color); }
-        .h-dl:hover { background: var(--accent-hover); }
-        .h-del { background: #ef4444; }
-        .h-del:hover { background: #dc2626; }
-        .no-history { text-align: center; color: var(--text-muted); padding: 30px 0; font-size: 13px; }
-
-        .confirm-modal {
+        /* Mobile Bottom Tab Controls */
+        .controls-panel {
             background: var(--bg-sidebar);
-            border: 1px solid var(--border-color);
-            width: 90%;
-            max-width: 400px;
-            border-radius: 14px;
-            padding: 22px;
-            text-align: center;
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
-            transform: scale(0.9);
-            transition: transform 0.2s ease;
-        }
-        .modal-overlay.active .confirm-modal {
-            transform: scale(1);
-        }
-        .confirm-icon {
-            font-size: 34px;
-            margin-bottom: 12px;
-            color: #ef4444;
-        }
-        .confirm-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-        .confirm-desc {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-        .confirm-buttons {
+            border-top: 1px solid var(--border-color);
+            height: 250px;
             display: flex;
-            gap: 10px;
-        }
-        .confirm-btn {
-            padding: 10px 16px;
-            font-size: 13px;
-            border-radius: 8px;
-            font-weight: 600;
-            margin: 0;
-            cursor: pointer;
-        }
-        .btn-cancel {
-            background: var(--bg-card);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-        }
-        .btn-cancel:hover {
-            background: var(--border-color);
-        }
-        .btn-danger-confirm {
-            background: #ef4444;
-            color: white;
-        }
-        .btn-danger-confirm:hover {
-            background: #dc2626;
+            flex-direction: column;
         }
 
-        @media (max-width: 850px) {
-            body {
-                padding: 15px 10px;
-            }
-            .top-actions-container {
-                position: relative;
-                top: 0;
-                right: 0;
-                justify-content: center;
-                margin-bottom: 15px;
-                width: 100%;
-            }
-            header {
-                margin-top: 10px;
-                margin-bottom: 15px;
-            }
-            .editor-container {
-                flex-direction: column;
-                padding: 15px;
-                gap: 15px;
-            }
-            .controls {
-                max-height: none;
-                overflow-y: visible;
-            }
-            .canvas-area {
-                min-height: 350px;
-                order: 2;
-            }
+        .tab-buttons {
+            display: flex;
+            background: #0f172a;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            text-align: center;
+        }
+        .tab-btn.active {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+            background: var(--bg-sidebar);
+        }
+
+        .tab-content-container {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+        }
+        .tab-content { display: none; flex-direction: column; gap: 10px; }
+        .tab-content.active { display: flex; }
+
+        /* Form Controls UI */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+        label { font-size: 11px; color: var(--text-muted); }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%; padding: 8px; background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 6px;
+            color: var(--text-main); font-size: 12px; outline: none;
+        }
+
+        input[type="range"] { width: 100%; accent-color: var(--accent-color); }
+        input[type="color"] { width: 100%; height: 35px; border: none; background: transparent; cursor: pointer; }
+
+        .action-btn {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600;
+        }
+        .action-btn.active { background: var(--accent-color); color: #0f172a; }
+        
+        .export-btn {
+            background: var(--btn-success);
+            color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 13px;
+        }
+
+        /* Desktop Adjustments */
+        @media (min-width: 768px) {
+            .workspace { flex-direction: row; }
+            .controls-panel { width: 350px; height: 100%; border-top: none; border-left: 1px solid var(--border-color); }
         }
     </style>
 </head>
 <body>
 
-    <!-- Upper Control Buttons -->
-    <div class="top-actions-container">
-        <button class="refresh-btn" id="refreshWorkspaceBtn" title="အကုန်လုံးအစပြန်လုပ်မည် (Reset)">
-            🔄
-        </button>
-
-        <button class="history-btn" id="openHistoryBtn">
-            ⏱️ History (မှတ်တမ်း)
-        </button>
-
-        <div class="action-pill">
-            <span class="theme-label" id="themeText">DARK MODE</span>
-            <label class="switch">
-                <input type="checkbox" id="themeToggle" checked>
-                <span class="slider"></span>
-            </label>
+    <!-- Header -->
+    <div class="header">
+        <h1>STUDIO CANVAS</h1>
+        <div class="header-btns">
+            <button class="btn-sm" id="undoBtn">↩️</button>
+            <button class="btn-sm" id="redoBtn">↪️</button>
+            <button class="btn-sm" id="resetBtn">🔄 Reset</button>
         </div>
     </div>
 
-    <header>
-        <h1>STUDIO CANVAS</h1>
-        <p>ဓာတ်ပုံများနှင့် စာသားများကို စိတ်ကြိုက်လှပစွာ ပြင်ဆင်ဖန်တီးပါ</p>
-    </header>
-
-    <div class="editor-container">
-        <!-- Controls Left Side -->
-        <div class="controls">
-            
-            <div id="editingStatus" class="editing-indicator">📝 ဓါတ်ပုံဟောင်းအား ပြန်လည်ပြင်ဆင်နေပါသည်...</div>
-
-            <!-- Canvas Background -->
-            <div class="section-card" style="border-left: 4px solid var(--accent-color);">
-                <div class="section-title">🎨 ကင်းဗတ်စ် နောက်ခံအရောင်</div>
-                <input type="color" id="bgColor" value="#ffffff">
-            </div>
-
-            <!-- Image 1 Controls -->
-            <div class="section-card">
-                <div class="section-title">🖼️ ပထမပုံ (First Image)</div>
-                <input type="file" id="imageLoader1" accept="image/*">
-                
-                <div class="grid-inputs-3">
-                    <div class="input-unit">
-                        <span>Width (px)</span>
-                        <input type="number" id="img1W" value="300">
-                    </div>
-                    <div class="input-unit">
-                        <span>Height (px)</span>
-                        <input type="number" id="img1H" value="300">
-                    </div>
-                    <div class="input-unit">
-                        <span>ပုံစံ(Shape)</span>
-                        <select id="img1Shape">
-                            <option value="square">လေးထောင့်(Square)</option>
-                            <option value="circle">အဝိုင်း(Circle)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="input-unit" style="margin-top: 5px;">
-                    <div class="slider-header"><span>မှိန်အား (Opacity)</span><span id="op1Val">100%</span></div>
-                    <input type="range" id="img1Opacity" min="0" max="100" value="100">
-                </div>
-            </div>
-
-            <!-- Image 2 Controls -->
-            <div class="section-card">
-                <div class="section-title">📷 ဒုတိယပုံ (Second Image)</div>
-                <input type="file" id="imageLoader2" accept="image/*">
-                
-                <div class="grid-inputs">
-                    <div class="input-unit">
-                        <span>Width (px)</span>
-                        <input type="number" id="img2W" value="200">
-                    </div>
-                    <div class="input-unit">
-                        <span>Height (px)</span>
-                        <input type="number" id="img2H" value="200">
-                    </div>
-                </div>
-                
-                <div class="input-unit" style="margin-top: 5px;">
-                    <div class="slider-header"><span>မှိန်အား (Opacity)</span><span id="op2Val">100%</span></div>
-                    <input type="range" id="img2Opacity" min="0" max="100" value="100">
-                </div>
-            </div>
-
-            <!-- Text Controls -->
-            <div class="section-card">
-                <div class="section-title">✍️ စာသားနှင့် ဖောင့်ဒီဇိုင်း</div>
-                <textarea id="textInput" rows="2">မင်္ဂလာပါ ခင်ဗျာ 😊🔥</textarea>
-                
-                <div class="grid-inputs-3">
-                    <div class="input-unit">
-                        <span>Size (px)</span>
-                        <input type="number" id="textSize" value="40">
-                    </div>
-                    <div class="input-unit">
-                        <span>စာလုံး(Font)</span>
-                        <select id="textFont">
-                            <option value="'Pyidaungsu', sans-serif">ပြည်ထောင်စု</option>
-                            <option value="'Times New Roman', Times, serif">Times New Roman</option>
-                            <option value="sans-serif">Default</option>
-                        </select>
-                    </div>
-                    <div class="input-unit">
-                        <span>အရောင်(Color)</span>
-                        <input type="color" id="textColor" value="#ffffff" style="height: 38px;">
-                    </div>
-                </div>
-
-                <!-- Font Styles Bold, Italic, Underline added here -->
-                <div class="input-unit">
-                    <span>စာလုံးစတိုင် (Font Style)</span>
-                    <div class="font-style-container">
-                        <button type="button" class="font-style-btn" id="btnBold">B</button>
-                        <button type="button" class="font-style-btn" id="btnItalic">I</button>
-                        <button type="button" class="font-style-btn" id="btnUnderline">U</button>
-                    </div>
-                </div>
-
-                <div class="grid-inputs">
-                    <div class="input-unit">
-                        <span>အနားသတ်လိုင်း (Stroke)</span>
-                        <select id="textStroke">
-                            <option value="none">မသုံးပါ</option>
-                            <option value="#000000">အနက်လိုင်း</option>
-                            <option value="#ffffff">အဖြူလိုင်း</option>
-                            <option value="#ef4444">အနီလိုင်း</option>
-                            <option value="#3b82f6">အပြာလိုင်း</option>
-                            <option value="#10b981">အစိမ်းလိုင်း</option>
-                            <option value="#f59e0b">အဝါလိုင်း</option>
-                        </select>
-                    </div>
-                    <div class="input-unit">
-                        <span>စာသားအရိပ် (Shadow)</span>
-                        <select id="textShadow">
-                            <option value="none">မသုံးပါ</option>
-                            <option value="soft">ဖွဖွအရိပ်</option>
-                            <option value="deep">ထင်ရှားသောအရိပ်</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Save Image Button -->
-            <button class="save-btn" id="saveBtn">✨ ဓာတ်ပုံအားသိမ်းရန် (Save Image)</button>
-        </div>
-
-        <!-- Canvas Workspace Side -->
-        <div class="canvas-area">
+    <!-- Main Section -->
+    <div class="workspace">
+        <!-- Canvas View -->
+        <div class="canvas-container">
             <canvas id="editorCanvas" width="800" height="600"></canvas>
         </div>
-    </div>
 
-    <!-- History Modal Overlay -->
-    <div class="modal-overlay" id="historyModalOverlay">
-        <div class="history-modal">
-            <div class="modal-header">
-                <h2>⏱️ ဖန်တီးခဲ့သော ဓာတ်ပုံမှတ်တမ်းများ</h2>
-                <button class="close-modal" id="closeHistoryBtn">&times;</button>
+        <!-- Mobile Controls Panel -->
+        <div class="controls-panel">
+            <!-- Tabs Navigation -->
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('tab-layers')">🖼️ Layers</button>
+                <button class="tab-btn" onclick="switchTab('tab-filter')">⚙️ Adjust</button>
+                <button class="tab-btn" onclick="switchTab('tab-text')">✍️ Text</button>
+                <button class="tab-btn" onclick="switchTab('tab-draw')">🎨 Draw/Shapes</button>
+                <button class="tab-btn" onclick="switchTab('tab-export')">📥 Export</button>
             </div>
-            <div class="history-list" id="historyListContainer">
-                <!-- History Items Inject Here -->
-            </div>
-        </div>
-    </div>
 
-    <!-- Refresh Confirmation Modal Overlay -->
-    <div class="modal-overlay" id="refreshConfirmOverlay">
-        <div class="confirm-modal">
-            <div class="confirm-icon">⚠️</div>
-            <div class="confirm-title">Workspace ကို Reset လုပ်မှာလား?</div>
-            <div class="confirm-desc">လက်ရှိပြင်ဆင်နေတဲ့ ဒေတာတွေနဲ့ စာသားတွေအားလုံး ပျက်သွားမှာ ဖြစ်ပါတယ်။ အစကနေ ပြန်စတင်ဖို့ သေချာပါသလား ခင်ဗျာ။</div>
-            <div class="confirm-buttons">
-                <button class="confirm-btn btn-cancel" id="cancelRefreshBtn">မလုပ်တော့ပါ</button>
-                <button class="confirm-btn btn-danger-confirm" id="confirmRefreshBtn">သေချာပါသည်</button>
+            <!-- Tab Contents -->
+            <div class="tab-content-container">
+                
+                <!-- Tab: Layers & Canvas -->
+                <div id="tab-layers" class="tab-content active">
+                    <div>
+                        <label>+ ဓာတ်ပုံထည့်ရန်</label>
+                        <input type="file" id="imageLoader" accept="image/*">
+                    </div>
+                    <div class="grid-2">
+                        <button class="action-btn" id="deleteLayerBtn">❌ ဖျက်မည်</button>
+                        <button class="action-btn" id="bringForwardBtn">⬆️ ရှေ့သို့ယူမည်</button>
+                    </div>
+                    <div class="grid-3" style="margin-top: 5px;">
+                        <div><label>W (px)</label><input type="number" id="canvasW" value="800"></div>
+                        <div><label>H (px)</label><input type="number" id="canvasH" value="600"></div>
+                        <div><label>BG</label><input type="color" id="bgColor" value="#ffffff"></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Filters & Transform -->
+                <div id="tab-filter" class="tab-content">
+                    <div class="grid-2">
+                        <button class="action-btn" id="flipHBtn">↔️ Flip H</button>
+                        <button class="action-btn" id="flipVBtn">↕️ Flip V</button>
+                    </div>
+                    <div>
+                        <label>Rotate Angle: <span id="rotVal">0°</span></label>
+                        <input type="range" id="rotateSlider" min="0" max="360" value="0">
+                    </div>
+                    <div>
+                        <label>Brightness: <span id="brightVal">100%</span></label>
+                        <input type="range" id="brightSlider" min="0" max="200" value="100">
+                    </div>
+                    <div>
+                        <label>Contrast: <span id="contrastVal">100%</span></label>
+                        <input type="range" id="contrastSlider" min="0" max="200" value="100">
+                    </div>
+                </div>
+
+                <!-- Tab: Text -->
+                <div id="tab-text" class="tab-content">
+                    <textarea id="textInput" rows="2" placeholder="စာသားရိုက်ထည့်ပါ...">မင်္ဂလာပါ</textarea>
+                    <div class="grid-3">
+                        <div><label>Size</label><input type="number" id="textSize" value="40"></div>
+                        <div><label>Color</label><input type="color" id="textColor" value="#000000"></div>
+                        <div>
+                            <label>Font</label>
+                            <select id="textFont">
+                                <option value="'Pyidaungsu', sans-serif">ပြည်ထောင်စု</option>
+                                <option value="sans-serif">Default</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="action-btn" id="addTextBtn" style="background: var(--accent-color); color: #0f172a;">+ စာသားထည့်မည်</button>
+                </div>
+
+                <!-- Tab: Draw & Shapes -->
+                <div id="tab-draw" class="tab-content">
+                    <div class="grid-3">
+                        <button class="action-btn" id="brushToggleBtn">✏️ Brush</button>
+                        <div><label>Size</label><input type="number" id="brushSize" value="5"></div>
+                        <div><label>Color</label><input type="color" id="brushColor" value="#ef4444"></div>
+                    </div>
+                    <div class="grid-3">
+                        <button class="action-btn" id="addRectBtn">⬛ Square</button>
+                        <button class="action-btn" id="addCircleBtn">🔴 Circle</button>
+                        <button class="action-btn sticker-btn" data-emoji="🔥">🔥 Emoji</button>
+                    </div>
+                </div>
+
+                <!-- Tab: Export -->
+                <div id="tab-export" class="tab-content">
+                    <div class="grid-2">
+                        <div>
+                            <label>Format</label>
+                            <select id="exportFormat">
+                                <option value="png">PNG</option>
+                                <option value="jpeg">JPG</option>
+                                <option value="webp">WEBP</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Quality</label>
+                            <input type="number" id="exportQuality" min="0.1" max="1" step="0.1" value="0.9">
+                        </div>
+                    </div>
+                    <button class="export-btn" id="exportBtn">✨ ဓာတ်ပုံသိမ်းဆည်းမည်</button>
+                </div>
+
             </div>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('editorCanvas');
-        const ctx = canvas.getContext('2d');
-
-        // Theme Toggle
-        const themeToggle = document.getElementById('themeToggle');
-        const themeText = document.getElementById('themeText');
-
-        themeToggle.addEventListener('change', () => {
-            if (themeToggle.checked) {
-                document.documentElement.removeAttribute('data-theme');
-                themeText.innerText = "DARK MODE";
-            } else {
-                document.documentElement.setAttribute('data-theme', 'light');
-                themeText.innerText = "LIGHT MODE";
-            }
-        });
-
-        // Controls Elements
-        const bgColor = document.getElementById('bgColor');
-        const imageLoader1 = document.getElementById('imageLoader1');
-        const imageLoader2 = document.getElementById('imageLoader2');
-        const img1W = document.getElementById('img1W');
-        const img1H = document.getElementById('img1H');
-        const img1Shape = document.getElementById('img1Shape');
-        const img1Opacity = document.getElementById('img1Opacity');
-        const img2W = document.getElementById('img2W');
-        const img2H = document.getElementById('img2H');
-        const img2Opacity = document.getElementById('img2Opacity');
-        
-        const textInput = document.getElementById('textInput');
-        const textSize = document.getElementById('textSize');
-        const textFont = document.getElementById('textFont');
-        const textColor = document.getElementById('textColor');
-        const textStroke = document.getElementById('textStroke');
-        const textShadow = document.getElementById('textShadow');
-        const saveBtn = document.getElementById('saveBtn'); 
-        const editingStatus = document.getElementById('editingStatus');
-        const refreshWorkspaceBtn = document.getElementById('refreshWorkspaceBtn');
-
-        // Font Style Buttons
-        const btnBold = document.getElementById('btnBold');
-        const btnItalic = document.getElementById('btnItalic');
-        const btnUnderline = document.getElementById('btnUnderline');
-
-        // History UI Elements
-        const historyModalOverlay = document.getElementById('historyModalOverlay');
-        const openHistoryBtn = document.getElementById('openHistoryBtn');
-        const closeHistoryBtn = document.getElementById('closeHistoryBtn');
-        const historyListContainer = document.getElementById('historyListContainer');
-
-        // Custom Refresh Modal Elements
-        const refreshConfirmOverlay = document.getElementById('refreshConfirmOverlay');
-        const cancelRefreshBtn = document.getElementById('cancelRefreshBtn');
-        const confirmRefreshBtn = document.getElementById('confirmRefreshBtn');
-
-        // State Trackers
-        let img1 = new Image();
-        let img2 = new Image();
-        let isImg1Loaded = false;
-        let isImg2Loaded = false;
-
-        let isBold = false;
-        let isItalic = false;
-        let isUnderline = false;
-
-        let img1Pos = { x: 80, y: 100 };
-        let img2Pos = { x: 450, y: 100 };
-        let textPos = { x: 80, y: 480 };
-
-        let draggingItem = null;
-        let dragOffset = { x: 0, y: 0 };
-        let textBoundingBox = { width: 200, height: 50 };
-
-        let currentEditingHistoryId = null;
-
-        function drawImage1() {
-            if (!isImg1Loaded) return;
-            const w1 = parseInt(img1W.value);
-            const h1 = parseInt(img1H.value);
-            const shape = img1Shape.value;
-
-            ctx.save();
-            ctx.globalAlpha = parseInt(img1Opacity.value) / 100;
-
-            if (shape === 'circle') {
-                ctx.beginPath();
-                ctx.arc(img1Pos.x + w1 / 2, img1Pos.y + h1 / 2, Math.min(w1, h1) / 2, 0, Math.PI * 2);
-                ctx.closePath();
-                ctx.clip();
-            }
-
-            ctx.drawImage(img1, img1Pos.x, img1Pos.y, w1, h1);
-            ctx.restore();
-        }
-
-        function drawImage2() {
-            if (!isImg2Loaded) return;
-            ctx.save();
-            ctx.globalAlpha = parseInt(img2Opacity.value) / 100;
-            ctx.drawImage(img2, img2Pos.x, img2Pos.y, parseInt(img2W.value), parseInt(img2H.value));
-            ctx.restore();
-        }
-
-        function drawEverything() {
-            ctx.fillStyle = bgColor.value;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            drawImage1(); 
-            drawImage2(); 
-
-            ctx.save();
-            const fSize = parseInt(textSize.value);
-            const lHeight = 1.3 * fSize;
+        // Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            ctx.fillStyle = textColor.value;
-            
-            // Build dynamic font style string
-            let fontModifiers = "";
-            if (isItalic) fontModifiers += "italic ";
-            if (isBold) fontModifiers += "bold ";
-            ctx.font = `${fontModifiers}${fSize}px ${textFont.value}`;
-            ctx.textBaseline = "top";
-
-            if (textShadow.value === 'soft') {
-                ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-                ctx.shadowBlur = 6;
-                ctx.shadowOffsetX = 3;
-                ctx.shadowOffsetY = 3;
-            } else if (textShadow.value === 'deep') {
-                ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
-                ctx.shadowBlur = 12;
-                ctx.shadowOffsetX = 5;
-                ctx.shadowOffsetY = 5;
-            } else {
-                ctx.shadowColor = "transparent";
-            }
-
-            const lines = textInput.value.split('\n');
-            let maxLineWidth = 0;
-
-            lines.forEach((line, index) => {
-                const currentY = textPos.y + (index * lHeight);
-                ctx.fillText(line, textPos.x, currentY);
-                
-                if (textStroke.value !== 'none') {
-                    ctx.save();
-                    ctx.shadowColor = "transparent"; 
-                    ctx.strokeStyle = textStroke.value;
-                    ctx.lineWidth = fSize * 0.1; 
-                    ctx.strokeText(line, textPos.x, currentY);
-                    ctx.fillText(line, textPos.x, currentY); 
-                    ctx.restore();
-                }
-
-                const lineWidth = ctx.measureText(line).width;
-                if (lineWidth > maxLineWidth) maxLineWidth = lineWidth;
-
-                // Handle Underline logic manually for Canvas
-                if (isUnderline) {
-                    ctx.save();
-                    ctx.shadowColor = "transparent"; 
-                    ctx.strokeStyle = textColor.value;
-                    ctx.lineWidth = Math.max(1, fSize * 0.06);
-                    ctx.beginPath();
-                    ctx.moveTo(textPos.x, currentY + fSize * 1.05);
-                    ctx.lineTo(textPos.x + lineWidth, currentY + fSize * 1.05);
-                    ctx.stroke();
-                    ctx.restore();
-                }
-            });
-
-            ctx.restore();
-
-            textBoundingBox.width = maxLineWidth > 0 ? maxLineWidth : 100;
-            textBoundingBox.height = lines.length * lHeight;
-
-            if (!isImg1Loaded && !isImg2Loaded && !textInput.value.trim()) {
-                ctx.fillStyle = "#64748b";
-                ctx.font = "16px sans-serif";
-                ctx.fillText("ဘယ်ဘက်မှ ဓာတ်ပုံများကို ရွေးချယ်တင်သွင်းပါ သို့မဟုတ် History မှ ခေါ်ယူပါ...", 150, 290);
-            }
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
         }
 
-        // Font Style Toggle Handlers
-        btnBold.addEventListener('click', () => {
-            isBold = !isBold;
-            btnBold.classList.toggle('active', isBold);
-            drawEverything();
-        });
+        document.addEventListener("DOMContentLoaded", function() {
+            const canvas = document.getElementById('editorCanvas');
+            const ctx = canvas.getContext('2d');
 
-        btnItalic.addEventListener('click', () => {
-            isItalic = !isItalic;
-            btnItalic.classList.toggle('active', isItalic);
-            drawEverything();
-        });
+            let layers = [];
+            let activeLayerIndex = -1;
+            let undoStack = [];
+            let redoStack = [];
 
-        btnUnderline.addEventListener('click', () => {
-            isUnderline = !isUnderline;
-            btnUnderline.classList.toggle('active', isUnderline);
-            drawEverything();
-        });
+            let isBrushMode = false;
+            let isDrawing = false;
+            let currentPath = [];
 
-        imageLoader1.addEventListener('change', (e) => {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                img1.onload = function() { isImg1Loaded = true; drawEverything(); }
-                img1.src = event.target.result;
-            }
-            if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
-        });
-
-        imageLoader2.addEventListener('change', (e) => {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                img2.onload = function() { isImg2Loaded = true; drawEverything(); }
-                img2.src = event.target.result;
-            }
-            if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
-        });
-
-        img1Opacity.addEventListener('input', (e) => {
-            document.getElementById('op1Val').innerText = e.target.value + "%";
-            drawEverything();
-        });
-        img2Opacity.addEventListener('input', (e) => {
-            document.getElementById('op2Val').innerText = e.target.value + "%";
-            drawEverything();
-        });
-
-        bgColor.addEventListener('input', drawEverything);
-        img1Shape.addEventListener('change', drawEverything);
-        img1W.addEventListener('input', drawEverything);
-        img1H.addEventListener('input', drawEverything);
-        img2W.addEventListener('input', drawEverything);
-        img2H.addEventListener('input', drawEverything);
-        textInput.addEventListener('input', drawEverything);
-        textSize.addEventListener('input', drawEverything);
-        textFont.addEventListener('change', drawEverything);
-        textColor.addEventListener('input', drawEverything);
-        textStroke.addEventListener('change', drawEverything);
-        textShadow.addEventListener('change', drawEverything);
-
-        function handleStart(clientX, clientY) {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = (clientX - rect.left) * (canvas.width / rect.width);
-            const mouseY = (clientY - rect.top) * (canvas.height / rect.height);
-
-            if (mouseX >= textPos.x && mouseX <= textPos.x + textBoundingBox.width &&
-                mouseY >= textPos.y && mouseY <= textPos.y + textBoundingBox.height) {
-                draggingItem = 'text';
-                dragOffset.x = mouseX - textPos.x;
-                dragOffset.y = mouseY - textPos.y;
-                return;
+            function saveState() {
+                if (undoStack.length > 20) undoStack.shift();
+                undoStack.push(JSON.stringify(layers));
+                redoStack = [];
             }
 
-            if (isImg2Loaded && mouseX >= img2Pos.x && mouseX <= img2Pos.x + parseInt(img2W.value) &&
-                mouseY >= img2Pos.y && mouseY <= img2Pos.y + parseInt(img2H.value)) {
-                draggingItem = 'img2';
-                dragOffset.x = mouseX - img2Pos.x;
-                dragOffset.y = mouseY - img2Pos.y;
-                return;
-            }
-
-            if (isImg1Loaded && mouseX >= img1Pos.x && mouseX <= img1Pos.x + parseInt(img1W.value) &&
-                mouseY >= img1Pos.y && mouseY <= img1Pos.y + parseInt(img1H.value)) {
-                draggingItem = 'img1';
-                dragOffset.x = mouseX - img1Pos.x;
-                dragOffset.y = mouseY - img1Pos.y;
-                return;
-            }
-        }
-
-        function handleMove(clientX, clientY) {
-            if (!draggingItem) return;
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = (clientX - rect.left) * (canvas.width / rect.width);
-            const mouseY = (clientY - rect.top) * (canvas.height / rect.height);
-
-            if (draggingItem === 'text') {
-                textPos.x = mouseX - dragOffset.x; textPos.y = mouseY - dragOffset.y;
-            } else if (draggingItem === 'img2') {
-                img2Pos.x = mouseX - dragOffset.x; img2Pos.y = mouseY - dragOffset.y;
-            } else if (draggingItem === 'img1') {
-                img1Pos.x = mouseX - dragOffset.x; img1Pos.y = mouseY - dragOffset.y;
-            }
-            drawEverything();
-        }
-
-        canvas.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
-        canvas.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
-        window.addEventListener('mouseup', () => { draggingItem = null; });
-
-        canvas.addEventListener('touchstart', (e) => {
-            if(e.touches.length === 1) {
-                handleStart(e.touches[0].clientX, e.touches[0].clientY);
-                e.preventDefault();
-            }
-        }, {passive: false});
-        canvas.addEventListener('touchmove', (e) => {
-            if(e.touches.length === 1) {
-                handleMove(e.touches[0].clientX, e.touches[0].clientY);
-                e.preventDefault();
-            }
-        }, {passive: false});
-        window.addEventListener('touchend', () => { draggingItem = null; });
-
-        refreshWorkspaceBtn.addEventListener('click', () => {
-            refreshConfirmOverlay.classList.add('active');
-        });
-
-        cancelRefreshBtn.addEventListener('click', () => {
-            refreshConfirmOverlay.classList.remove('active');
-        });
-
-        confirmRefreshBtn.addEventListener('click', () => {
-            currentEditingHistoryId = null;
-            editingStatus.style.display = "none";
-
-            isImg1Loaded = false;
-            isImg2Loaded = false;
-            img1.src = "";
-            img2.src = "";
-            imageLoader1.value = "";
-            imageLoader2.value = "";
-
-            isBold = false; isItalic = false; isUnderline = false;
-            btnBold.classList.remove('active');
-            btnItalic.classList.remove('active');
-            btnUnderline.classList.remove('active');
-
-            bgColor.value = "#ffffff";
-            img1W.value = "300";
-            img1H.value = "300";
-            img1Shape.value = "square";
-            img1Opacity.value = "100";
-            document.getElementById('op1Val').innerText = "100%";
-            
-            img2W.value = "200";
-            img2H.value = "200";
-            img2Opacity.value = "100";
-            document.getElementById('op2Val').innerText = "100%";
-
-            textInput.value = "မင်္ဂလာပါ ခင်ဗျာ 😊🔥";
-            textSize.value = "40";
-            textFont.value = "'Pyidaungsu', sans-serif";
-            textColor.value = "#ffffff";
-            textStroke.value = "none";
-            textShadow.value = "none";
-
-            img1Pos = { x: 80, y: 100 };
-            img2Pos = { x: 450, y: 100 };
-            textPos = { x: 80, y: 480 };
-
-            drawEverything();
-            refreshConfirmOverlay.classList.remove('active');
-        });
-
-        function saveToHistory(dataUrl) {
-            let history = JSON.parse(localStorage.getItem('studio_history')) || [];
-            const timestamp = new Date().toLocaleString();
-
-            const currentMetadata = {
-                bgColor: bgColor.value,
-                img1Src: isImg1Loaded ? img1.src : null,
-                img1W: img1W.value,
-                img1H: img1H.value,
-                img1Shape: img1Shape.value,
-                img1Opacity: img1Opacity.value,
-                img1X: img1Pos.x,
-                img1Y: img1Pos.y,
-                
-                img2Src: isImg2Loaded ? img2.src : null,
-                img2W: img2W.value,
-                img2H: img2H.value,
-                img2Opacity: img2Opacity.value,
-                img2X: img2Pos.x,
-                img2Y: img2Pos.y,
-                
-                textVal: textInput.value,
-                textSize: textSize.value,
-                textFont: textFont.value,
-                textColor: textColor.value,
-                textStroke: textStroke.value,
-                textShadow: textShadow.value,
-                textX: textPos.x,
-                textY: textPos.y,
-                isBold: isBold,
-                isItalic: isItalic,
-                isUnderline: isUnderline
-            };
-
-            if (currentEditingHistoryId !== null) {
-                const itemIndex = history.findIndex(item => item.id === currentEditingHistoryId);
-                if (itemIndex !== -1) {
-                    history[itemIndex].image = dataUrl;
-                    history[itemIndex].date = timestamp + " (Edited)";
-                    history[itemIndex].metadata = currentMetadata;
+            function undo() {
+                if (undoStack.length > 0) {
+                    redoStack.push(JSON.stringify(layers));
+                    layers = JSON.parse(undoStack.pop());
+                    reconstructImages();
+                    drawEverything();
                 }
-                currentEditingHistoryId = null;
-                editingStatus.style.display = "none";
-            } else {
-                history.unshift({
-                    id: Date.now(),
-                    date: timestamp,
-                    image: dataUrl,
-                    metadata: currentMetadata
+            }
+
+            function redo() {
+                if (redoStack.length > 0) {
+                    undoStack.push(JSON.stringify(layers));
+                    layers = JSON.parse(redoStack.pop());
+                    reconstructImages();
+                    drawEverything();
+                }
+            }
+
+            function reconstructImages() {
+                layers.forEach(layer => {
+                    if (layer.type === 'image' && layer.src) {
+                        const img = new Image();
+                        img.src = layer.src;
+                        layer.imgObj = img;
+                    }
                 });
             }
 
-            if(history.length > 15) history.pop();
-            localStorage.setItem('studio_history', JSON.stringify(history));
-        }
+            document.getElementById('undoBtn').addEventListener('click', undo);
+            document.getElementById('redoBtn').addEventListener('click', redo);
 
-        function renderHistory() {
-            let history = JSON.parse(localStorage.getItem('studio_history')) || [];
-            historyListContainer.innerHTML = '';
+            // Canvas Dimensions & BG
+            const canvasW = document.getElementById('canvasW');
+            const canvasH = document.getElementById('canvasH');
+            const bgColor = document.getElementById('bgColor');
 
-            if (history.length === 0) {
-                historyListContainer.innerHTML = `<div class="no-history">ပြုလုပ်ခဲ့ဖူးသော မှတ်တမ်းဓာတ်ပုံများ မရှိသေးပါ။</div>`;
-                return;
-            }
-
-            history.forEach(item => {
-                let displayTxt = "(စာသားမပါဝင်ပါ)";
-                if (item.metadata && item.metadata.textVal) {
-                    displayTxt = item.metadata.textVal;
-                }
-
-                const div = document.createElement('div');
-                div.className = 'history-item';
-                div.innerHTML = `
-                    <img src="${item.image}" class="history-thumb" alt="Thumb">
-                    <div class="history-meta">
-                        <div class="history-text-preview">${displayTxt}</div>
-                        <div class="history-date">📅 ${item.date}</div>
-                    </div>
-                    <div class="history-actions">
-                        <button class="history-action-btn h-edit" data-id="${item.id}">✏️ Edit ပြန်လုပ်မည်</button>
-                        <button class="history-action-btn h-dl" onclick="downloadHistoryItem('${item.image}', ${item.id})">⬇️ သိမ်းရန်</button>
-                        <button class="history-action-btn h-del" onclick="deleteHistoryItem(${item.id})">❌</button>
-                    </div>
-                `;
-                
-                div.querySelector('.h-edit').addEventListener('click', () => {
-                    loadHistoryToEditWorkspace(item.id);
-                });
-
-                historyListContainer.appendChild(div);
-            });
-        }
-
-        function loadHistoryToEditWorkspace(itemId) {
-            let history = JSON.parse(localStorage.getItem('studio_history')) || [];
-            const targetItem = history.find(item => item.id === itemId);
-            
-            if(!targetItem || !targetItem.metadata) {
-                alert("ဒေတာအချက်အလက် ရှာမတွေ့ပါ။");
-                return;
-            }
-
-            const data = targetItem.metadata;
-            
-            currentEditingHistoryId = itemId;
-            editingStatus.style.display = "block";
-
-            bgColor.value = data.bgColor || "#ffffff";
-            textInput.value = data.textVal || "";
-            textSize.value = data.textSize || 40;
-            textFont.value = data.textFont || "sans-serif";
-            textColor.value = data.textColor || "#ffffff";
-            textStroke.value = data.textStroke || "none";
-            textShadow.value = data.textShadow || "none";
-            
-            isBold = !!data.isBold;
-            isItalic = !!data.isItalic;
-            isUnderline = !!data.isUnderline;
-            btnBold.classList.toggle('active', isBold);
-            btnItalic.classList.toggle('active', isItalic);
-            btnUnderline.classList.toggle('active', isUnderline);
-
-            textPos.x = data.textX !== undefined ? data.textX : 80;
-            textPos.y = data.textY !== undefined ? data.textY : 480;
-
-            img1W.value = data.img1W || 300;
-            img1H.value = data.img1H || 300;
-            img1Shape.value = data.img1Shape || "square";
-            img1Opacity.value = data.img1Opacity || 100;
-            document.getElementById('op1Val').innerText = img1Opacity.value + "%";
-            img1Pos.x = data.img1X !== undefined ? data.img1X : 80;
-            img1Pos.y = data.img1Y !== undefined ? data.img1Y : 100;
-
-            img2W.value = data.img2W || 200;
-            img2H.value = data.img2H || 200;
-            img2Opacity.value = data.img2Opacity || 100;
-            document.getElementById('op2Val').innerText = img2Opacity.value + "%";
-            img2Pos.x = data.img2X !== undefined ? data.img2X : 450;
-            img2Pos.y = data.img2Y !== undefined ? data.img2Y : 100;
-
-            let loadedCount = 0;
-            let totalToLoad = 0;
-
-            if (data.img1Src) totalToLoad++;
-            if (data.img2Src) totalToLoad++;
-
-            if (totalToLoad === 0) {
-                isImg1Loaded = false;
-                isImg2Loaded = false;
+            function updateCanvasSize() {
+                canvas.width = parseInt(canvasW.value) || 800;
+                canvas.height = parseInt(canvasH.value) || 600;
                 drawEverything();
             }
+            canvasW.addEventListener('input', updateCanvasSize);
+            canvasH.addEventListener('input', updateCanvasSize);
+            bgColor.addEventListener('input', drawEverything);
 
-            if (data.img1Src) {
-                img1.onload = function() {
-                    isImg1Loaded = true;
-                    loadedCount++;
-                    if(loadedCount === totalToLoad) drawEverything();
+            // Add Image Layer
+            document.getElementById('imageLoader').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        saveState();
+                        layers.push({
+                            id: Date.now(),
+                            type: 'image',
+                            imgObj: img,
+                            src: event.target.result,
+                            x: 50, y: 50,
+                            w: img.width > 300 ? 300 : img.width,
+                            h: img.width > 300 ? (img.height * (300 / img.width)) : img.height,
+                            flipH: false, flipV: false, rotate: 0,
+                            brightness: 100, contrast: 100
+                        });
+                        activeLayerIndex = layers.length - 1;
+                        drawEverything();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Delete & Order
+            document.getElementById('deleteLayerBtn').addEventListener('click', () => {
+                if (activeLayerIndex >= 0) {
+                    saveState();
+                    layers.splice(activeLayerIndex, 1);
+                    activeLayerIndex = layers.length - 1;
+                    drawEverything();
                 }
-                img1.src = data.img1Src;
-            } else {
-                isImg1Loaded = false;
+            });
+
+            // Add Text
+            document.getElementById('addTextBtn').addEventListener('click', () => {
+                saveState();
+                layers.push({
+                    id: Date.now(),
+                    type: 'text',
+                    text: document.getElementById('textInput').value || "စာသား",
+                    x: canvas.width / 2, y: canvas.height / 2,
+                    size: parseInt(document.getElementById('textSize').value),
+                    color: document.getElementById('textColor').value,
+                    font: document.getElementById('textFont').value
+                });
+                activeLayerIndex = layers.length - 1;
+                drawEverything();
+            });
+
+            // Brush Mode
+            const brushBtn = document.getElementById('brushToggleBtn');
+            brushBtn.addEventListener('click', () => {
+                isBrushMode = !isBrushMode;
+                brushBtn.classList.toggle('active', isBrushMode);
+            });
+
+            // Filters Input
+            const rotateSlider = document.getElementById('rotateSlider');
+            const brightSlider = document.getElementById('brightSlider');
+            const contrastSlider = document.getElementById('contrastSlider');
+
+            function applyFilterTransform() {
+                if (activeLayerIndex >= 0 && layers[activeLayerIndex].type === 'image') {
+                    const l = layers[activeLayerIndex];
+                    l.rotate = parseInt(rotateSlider.value);
+                    l.brightness = parseInt(brightSlider.value);
+                    l.contrast = parseInt(contrastSlider.value);
+                    document.getElementById('rotVal').innerText = l.rotate + "°";
+                    document.getElementById('brightVal').innerText = l.brightness + "%";
+                    document.getElementById('contrastVal').innerText = l.contrast + "%";
+                    drawEverything();
+                }
+            }
+            [rotateSlider, brightSlider, contrastSlider].forEach(el => el.addEventListener('input', applyFilterTransform));
+
+            document.getElementById('flipHBtn').addEventListener('click', () => {
+                if (activeLayerIndex >= 0 && layers[activeLayerIndex].type === 'image') {
+                    layers[activeLayerIndex].flipH = !layers[activeLayerIndex].flipH;
+                    drawEverything();
+                }
+            });
+
+            // Render Function
+            function drawEverything() {
+                ctx.fillStyle = bgColor.value;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                layers.forEach((layer, index) => {
+                    ctx.save();
+
+                    if (layer.type === 'image' && layer.imgObj) {
+                        ctx.translate(layer.x + layer.w / 2, layer.y + layer.h / 2);
+                        ctx.rotate((layer.rotate || 0) * Math.PI / 180);
+                        ctx.scale(layer.flipH ? -1 : 1, layer.flipV ? -1 : 1);
+                        ctx.filter = `brightness(${layer.brightness}%) contrast(${layer.contrast}%)`;
+                        ctx.drawImage(layer.imgObj, -layer.w / 2, -layer.h / 2, layer.w, layer.h);
+
+                    } else if (layer.type === 'text') {
+                        ctx.font = `${layer.size}px ${layer.font}`;
+                        ctx.fillStyle = layer.color;
+                        ctx.textAlign = 'center';
+                        ctx.fillText(layer.text, layer.x, layer.y);
+
+                    } else if (layer.type === 'path') {
+                        ctx.strokeStyle = layer.color;
+                        ctx.lineWidth = layer.size;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        layer.points.forEach((pt, i) => {
+                            if (i === 0) ctx.moveTo(pt.x, pt.y);
+                            else ctx.lineTo(pt.x, pt.y);
+                        });
+                        ctx.stroke();
+                    }
+
+                    if (index === activeLayerIndex && layer.type === 'image') {
+                        ctx.strokeStyle = '#38bdf8';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(layer.x - 2, layer.y - 2, layer.w + 4, layer.h + 4);
+                    }
+
+                    ctx.restore();
+                });
             }
 
-            if (data.img2Src) {
-                img2.onload = function() {
-                    isImg2Loaded = true;
-                    loadedCount++;
-                    if(loadedCount === totalToLoad) drawEverything();
-                }
-                img2.src = data.img2Src;
-            } else {
-                isImg2Loaded = false;
+            // Universal Touch / Drag Handler (Support Mobile Touch Events)
+            let isDragging = false;
+            let dragOffset = { x: 0, y: 0 };
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
             }
+
+            function handleStart(e) {
+                const pos = getPos(e);
+
+                if (isBrushMode) {
+                    isDrawing = true;
+                    saveState();
+                    currentPath = [{ x: pos.x, y: pos.y }];
+                    layers.push({
+                        type: 'path',
+                        points: currentPath,
+                        color: document.getElementById('brushColor').value,
+                        size: parseInt(document.getElementById('brushSize').value)
+                    });
+                    activeLayerIndex = layers.length - 1;
+                    return;
+                }
+
+                for (let i = layers.length - 1; i >= 0; i--) {
+                    const l = layers[i];
+                    if (l.type === 'image' && pos.x >= l.x && pos.x <= l.x + l.w && pos.y >= l.y && pos.y <= l.y + l.h) {
+                        activeLayerIndex = i;
+                        isDragging = true;
+                        dragOffset = { x: pos.x - l.x, y: pos.y - l.y };
+                        drawEverything();
+                        return;
+                    } else if (l.type === 'text') {
+                        activeLayerIndex = i;
+                        isDragging = true;
+                        dragOffset = { x: pos.x - l.x, y: pos.y - l.y };
+                        drawEverything();
+                        return;
+                    }
+                }
+            }
+
+            function handleMove(e) {
+                if (!isDragging && !isDrawing) return;
+                const pos = getPos(e);
+
+                if (isDrawing && isBrushMode) {
+                    currentPath.push({ x: pos.x, y: pos.y });
+                    drawEverything();
+                } else if (isDragging && activeLayerIndex >= 0) {
+                    const l = layers[activeLayerIndex];
+                    l.x = pos.x - dragOffset.x;
+                    l.y = pos.y - dragOffset.y;
+                    drawEverything();
+                }
+            }
+
+            function handleEnd() {
+                if (isDragging || isDrawing) saveState();
+                isDragging = false;
+                isDrawing = false;
+            }
+
+            // Mouse Events
+            canvas.addEventListener('mousedown', handleStart);
+            canvas.addEventListener('mousemove', handleMove);
+            window.addEventListener('mouseup', handleEnd);
+
+            // Mobile Touch Events
+            canvas.addEventListener('touchstart', handleStart);
+            canvas.addEventListener('touchmove', handleMove);
+            window.addEventListener('touchend', handleEnd);
+
+            // Export Output
+            document.getElementById('exportBtn').addEventListener('click', () => {
+                const format = document.getElementById('exportFormat').value;
+                const quality = parseFloat(document.getElementById('exportQuality').value) || 0.9;
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL(`image/${format}`, quality);
+                a.download = `mobile-canvas-${Date.now()}.${format}`;
+                a.click();
+            });
+
+            // Reset Workspace
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                if (confirm('Workspace အသစ် ပြန်စမှာ သေချာပါသလား?')) {
+                    layers = [];
+                    activeLayerIndex = -1;
+                    drawEverything();
+                }
+            });
 
             drawEverything();
-            historyModalOverlay.classList.remove('active');
-        }
-
-        window.downloadHistoryItem = function(dataUrl, id) {
-            fetch(dataUrl)
-                .then(res => res.blob())
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.download = `studio-history-${id}.png`;
-                    link.href = url;
-                    
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
-                    setTimeout(() => URL.revokeObjectURL(url), 100);
-                })
-                .catch(err => console.error("Download Error:", err));
-        };
-
-        window.deleteHistoryItem = function(id) {
-            let history = JSON.parse(localStorage.getItem('studio_history')) || [];
-            history = history.filter(item => item.id !== id);
-            localStorage.setItem('studio_history', JSON.stringify(history));
-            
-            if (currentEditingHistoryId === id) {
-                currentEditingHistoryId = null;
-                editingStatus.style.display = "none";
-            }
-            renderHistory();
-        };
-
-        openHistoryBtn.addEventListener('click', () => {
-            renderHistory();
-            historyModalOverlay.classList.add('active');
         });
-
-        closeHistoryBtn.addEventListener('click', () => {
-            historyModalOverlay.classList.remove('active');
-        });
-
-        historyModalOverlay.addEventListener('click', (e) => {
-            if (e.target === historyModalOverlay) historyModalOverlay.classList.remove('active');
-        });
-
-        // Smart Save Button Logic (Saves perfectly even without loading external images)
-        saveBtn.addEventListener('click', () => {
-            const currentDataUrl = canvas.toDataURL('image/png');
-            saveToHistory(currentDataUrl);
-
-            canvas.toBlob((blob) => {
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.download = `studio-${Date.now()}.png`; 
-                link.href = url;
-                
-                document.body.appendChild(link); 
-                link.click();
-                document.body.removeChild(link);
-                
-                setTimeout(() => URL.revokeObjectURL(url), 100);
-            }, 'image/png');
-        });
-
-        // Initial Canvas Drawing Start
-        drawEverything();
     </script>
 </body>
 </html>
